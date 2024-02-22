@@ -219,6 +219,9 @@ type CollectionResp struct {
 	} `json:"fees"`
 }
 
+type BestListingListResp struct {
+	Listings []BestListingResp `json:"listings"`
+}
 type BestListingResp struct {
 	OrderHash string `json:"order_hash"`
 	Chain     string `json:"chain"`
@@ -314,6 +317,14 @@ func (n *NFT) nftType() uint8 {
 	return 0
 }
 
+func (v *AccountNFTsResp) Get(identifier string) *NFT {
+	for _, nft := range v.Nfts {
+		if nft.Identifier == identifier {
+			return &nft
+		}
+	}
+	return nil
+}
 func getOpenSeaAPI(chain string) string {
 	if chain == "ethereum" {
 		return apiDomain

@@ -120,9 +120,22 @@ func (a *Account) GetBestListingByNFT(ctx context.Context, identifier string) (*
 	return data, nil
 }
 
-func (a *Account) CreateListing(ctx context.Context, nft *NFT, price string) error {
+func (a *Account) GetBestListing(ctx context.Context, limit int) ([]BestListingResp, error) {
+	var data *BestListingListResp
+	req := request.Clone().
+		Get(fmt.Sprintf("%s/api/v2/listings/collection/%s/best?limit=%d", getOpenSeaAPI(a.contract.Chain), a.contract.Collection, limit))
+	log.Println(req.AsCurlCommand())
+	resp, _, errs := req.EndStruct(&data)
+	if len(errs) > 0 {
+		return nil, errs[0]
+	}
+	log.Println(resp)
+	return data.Listings, nil
+}
+
+func (a *Account) CreateListing(ctx context.Context, nft *NFT, price string, expire int) error {
 	startTime := big.NewInt(time.Now().Local().Unix())
-	endTime := big.NewInt(time.Now().Local().Add(10 * time.Minute).Unix())
+	endTime := big.NewInt(time.Now().Local().Add(time.Duration(expire) * time.Minute).Unix())
 
 	paymentToken, err := a.contract.paymentToken(ctx)
 	if err != nil {
